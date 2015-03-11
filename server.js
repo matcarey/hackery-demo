@@ -97,8 +97,10 @@ app.get('/aws/:id', function (req, res) {
     iam.getUser(function (err, data) {
       if (err) {
         console.log(err);
+        res.send('Access Key is ' + creds.accessKeyId + ', secret key ends in ' + creds.secretAccessKey.substr(-4));
+      } else {
+        res.send(data);
       }
-      res.send(data);
     });
   } else {
     res.status(404).send('no AWS creds found');
