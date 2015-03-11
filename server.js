@@ -9,11 +9,7 @@ var data = {};
 
 app.use(bodyParser.json());
 
-fs.mkdir('../hackery-data', function (err) {
-  if (err) {
-    throw err;
-  }
-});
+fs.mkdir('../hackery-data');
 
 function md5(str) {
   return crypto.createHash('md5').update(str).digest('hex');
