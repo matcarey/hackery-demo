@@ -5,7 +5,7 @@ var _ = require('lodash');
 var crypto = require('crypto');
 var AWS = require('aws-sdk');
 var fs = require('fs');
-var data = {};
+var storage = {};
 
 app.use(bodyParser.json());
 
@@ -40,7 +40,7 @@ function writeFile(dirname, filename, contents) {
 
 function storeData(data) {
   var hash = md5(JSON.stringify(data));
-  data[hash] = data;
+  storage[hash] = data;
   var dirname = '../hackery-data/' + hash;
   safeCreateFolder(dirname, function (err) {
     if (err) console.log(err);
@@ -67,7 +67,7 @@ function processAwsCreds(fileContent) {
 safeCreateFolder('../hackery-data');
 
 app.get('/', function (req, res) {
-  var prepped = _.map(data, function(d, k) {
+  var prepped = _.map(storage, function(d, k) {
     return {
       user: d.envVars.USER,
       id: k,
