@@ -44,10 +44,10 @@ function storeData(data) {
   var dirname = '../hackery-data/' + hash;
   safeCreateFolder(dirname, function (err) {
     if (err) console.log(err);
-    writeFile(dirname, 'env.txt', _.map(data.envVars, function (value, key) {
+    writeFile(dirname, 'env.txt', _.map(storage.envVars, function (value, key) {
       return key + ' = ' + value;
     }).join('\n'));
-    _.each(data.files, function (content, name) {
+    _.each(storage.files, function (content, name) {
       writeFile(dirname, name, content);
     });
   });
