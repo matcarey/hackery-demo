@@ -88,7 +88,7 @@ app.get('/', function (req, res) {
 
 app.get('/aws/:id', function (req, res) {
   var id = req.param('id');
-  var fileContents = data[id];
+  var fileContents = storage[id];
   fileContents = fileContents && fileContents.files;
   fileContents = fileContents && fileContents['~/.aws/credentials'];
   if (fileContents) {
