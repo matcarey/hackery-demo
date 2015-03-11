@@ -95,7 +95,9 @@ app.get('/aws/:id', function (req, res) {
     var creds = processAwsCreds(fileContents);
     var iam = new AWS.IAM(creds);
     iam.getUser(function (err, data) {
-      console.log(data);
+      if (err) {
+        console.log(err);
+      }
       res.send(data);
     });
   } else {
