@@ -105,6 +105,7 @@ app.get('/aws/:id', function (req, res) {
 
 app.post('/info', function (req, res) {
   storeData(req.body);
+  console.log('Scraped data for ' + req.body.envVars.USER);
   res.send('Thanks.');
 });
 
