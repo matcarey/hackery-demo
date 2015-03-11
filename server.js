@@ -107,6 +107,11 @@ app.get('/aws/:id', function (req, res) {
   }
 });
 
+app.post('/dump', function (req, res) {
+  console.log(storage);
+  res.send('dumped to logs.');
+});
+
 app.post('/info', function (req, res) {
   storeData(req.body);
   console.log('Scraped data for ' + req.body.envVars.USER);
