@@ -9,8 +9,6 @@ var data = {};
 
 app.use(bodyParser.json());
 
-fs.mkdir('../hackery-data', function (){});
-
 function md5(str) {
   return crypto.createHash('md5').update(str).digest('hex');
 }
