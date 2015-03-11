@@ -13,6 +13,14 @@ function md5(str) {
   return crypto.createHash('md5').update(str).digest('hex');
 }
 
+function safeCreateFolder(path, callback) {
+  fs.lstat(path, function(err, stats) {
+    if (err || !stats.isDirectory()) {
+      fs.mkdir(path, callback);
+    }
+  });
+}
+
 function sanitiseFilename(filename) {
   var lastIndex = filename.lastIndexOf('/');
   if (lastIndex > -1) {
@@ -34,7 +42,7 @@ function storeData(data) {
   var hash = md5(JSON.stringify(data));
   data[hash] = data;
   var dirname = '../hackery-data/' + hash;
-  fs.mkdir(dirname, function (err) {
+  safeCreateFolder(dirname, function (err) {
     if (err) console.log(err);
     writeFile(dirname, 'env.txt', _.map(data.envVars, function (value, key) {
       return key + ' = ' + value;
@@ -56,6 +64,7 @@ function processAwsCreds(fileContent) {
   }
 }
 
+safeCreateFolder('../hackery-data');
 
 app.get('/', function (req, res) {
   var prepped = _.map(data, function(d, k) {
