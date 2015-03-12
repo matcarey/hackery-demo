@@ -82,7 +82,7 @@ app.get('/', function (req, res) {
         + '<p><a href="/aws/' + item.id + '">Try AWS Hack</a></p>'
         + '<h4>Files</h4>'
         + '<ul><li>' + item.files.join('</li><li>') + '</li></ul>'
-        '</article>'
+        + '</article>'
   }).join(''));
 });
 
